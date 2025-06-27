@@ -1,0 +1,62 @@
+version: "3.9"
+services:
+  postgres-web:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: pessoa_web
+      POSTGRES_USER: dev
+      POSTGRES_PASSWORD: dev
+    volumes: [pessoa_web_data:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dev -d pessoa_web"]
+    networks: [internal]
+
+  postgres-api:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: pessoa_api
+      POSTGRES_USER: dev
+      POSTGRES_PASSWORD: dev
+    volumes: [pessoa_api_data:/var/lib/postgresql/data]
+    networks: [internal]
+
+  rabbitmq:
+    image: rabbitmq:3.13-management-alpine
+    ports: ["15672:15672"]          # UI web
+    networks: [internal]
+
+  backend:
+    build: ./backend
+    environment:
+      DB_HOST: postgres-web
+      DB_USER: dev
+      DB_PASS: dev
+      MQ_HOST: rabbitmq
+    depends_on: [postgres-web, rabbitmq]
+    ports: ["8080:8080"]
+    networks: [internal]
+
+  api:
+    build: ./api
+    environment:
+      DB_HOST: postgres-api
+      DB_USER: dev
+      DB_PASS: dev
+    depends_on: [postgres-api]
+    ports: ["8081:8081"]
+    networks: [internal]
+
+  frontend:
+    build: ./frontend
+    env_file:
+      - ./frontend/.env.production
+    depends_on: [backend, api]
+    ports: ["3000:3000"]
+    networks: [internal]
+
+networks:
+  internal:
+
+volumes:
+  pessoa_web_data:
+  pessoa_api_data:
