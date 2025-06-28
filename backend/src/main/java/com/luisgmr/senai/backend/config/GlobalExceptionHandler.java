@@ -1,6 +1,6 @@
-package com.luisgmr.senai.api.config;
+package com.luisgmr.senai.backend.config;
 
-import com.luisgmr.senai.api.dto.ErroResponseDTO;
+import com.luisgmr.senai.backend.dto.ErroResponseDTO;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.http.HttpStatus;
@@ -24,7 +24,7 @@ public class GlobalExceptionHandler {
                 .timestamp(ZonedDateTime.now().toString())
                 .erro(exception.getClass().getSimpleName())
                 .mensagem(capitalize(firstError.getField() + " " + firstError.getDefaultMessage()))
-                .caminho("api/" + request.getRequestURI())
+                .caminho("backend/" + request.getRequestURI())
                 .build();
 
         return ResponseEntity.badRequest().body(error);

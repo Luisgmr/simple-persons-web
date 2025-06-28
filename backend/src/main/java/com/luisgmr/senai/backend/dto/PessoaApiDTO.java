@@ -1,10 +1,12 @@
-package com.luisgmr.senai.api.dto;
+package com.luisgmr.senai.backend.dto;
 
-import lombok.*;
-import java.time.*;
+import lombok.Data;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Data
-public class PessoaDetailsDTO {
+public class PessoaApiDTO {
     private String nome;
     private LocalDate dataNascimento;
     private String cpf;
@@ -17,7 +19,7 @@ public class PessoaDetailsDTO {
     public static class EnderecoDTO {
         private String cep;
         private String rua;
-        private Integer numero;
+        private String numero;
         private String cidade;
         private String estado;
     }

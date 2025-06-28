@@ -14,6 +14,8 @@ spring:
   rabbitmq:
     host: ${MQ_HOST:rabbitmq}
     port: ${MQ_PORT:5672}
+    username: ${MQ_USER:guest}
+    password: ${MQ_PASS:guest}
   web:
     locale: pt_BR
     locale-resolver: fixed
@@ -21,6 +23,11 @@ spring:
 server:
   port: 8080
 
+api:
+  pessoa:
+    url: ${API_PESSOA_URL:http://localhost:8081}
+
 logging:
   level:
     org.springframework: INFO
+    com.luisgmr.senai.backend: DEBUG

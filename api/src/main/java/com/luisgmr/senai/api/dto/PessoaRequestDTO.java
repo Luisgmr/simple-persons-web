@@ -28,7 +28,7 @@ public class PessoaRequestDTO {
     public static class EnderecoDTO {
         @NotBlank(message = "CEP é obrigatório") private String cep;
         @NotBlank(message = "Rua é obrigatória") private String rua;
-        @NotBlank(message = "Número é obrigatório") private String numero;
+        @NotNull(message = "Número é obrigatório") private Integer numero;
         @NotBlank(message = "Cidade é obrigatória") private String cidade;
         @NotBlank(message = "Estado é obrigatório") private String estado;
     }
