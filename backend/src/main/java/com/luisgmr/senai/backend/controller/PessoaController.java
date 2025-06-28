@@ -1,6 +1,7 @@
 package com.luisgmr.senai.backend.controller;
 
-import com.luisgmr.senai.backend.dto.*;
+import com.luisgmr.senai.backend.dto.request.CadastrarPessoaRequestDTO;
+import com.luisgmr.senai.backend.dto.response.*;
 import com.luisgmr.senai.backend.service.*;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -9,6 +10,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @RestController
 @RequestMapping("/pessoa")
@@ -18,22 +22,31 @@ public class PessoaController {
     private final PessoaService service;
 
     @PostMapping
-    public ResponseEntity<PessoaResponseDTO> criar(@Valid @RequestBody PessoaRequestDTO dto) {
+    public ResponseEntity<CadastrarPessoaResponseDTO> criar(@Valid @RequestBody CadastrarPessoaRequestDTO dto) {
         return ResponseEntity.status(HttpStatus.CREATED).body(service.criarPessoa(dto));
     }
 
     @PutMapping("/cpf/{cpf}")
-    public ResponseEntity<PessoaResponseDTO> atualizar(@PathVariable String cpf, @Valid @RequestBody PessoaRequestDTO dto) {
+    public ResponseEntity<CadastrarPessoaResponseDTO> atualizar(@PathVariable String cpf, @Valid @RequestBody CadastrarPessoaRequestDTO dto) {
         return ResponseEntity.ok(service.atualizarPessoa(cpf, dto));
     }
 
     @GetMapping
-    public ResponseEntity<List<PessoaResponseDTO>> listar() {
+    public ResponseEntity<List<CadastrarPessoaResponseDTO>> listar() {
         return ResponseEntity.ok(service.findAll());
     }
 
+    @GetMapping("/paginado")
+    public ResponseEntity<PaginaResponseDTO<PessoaConsultaResponseDTO>> listarPaginado(
+            @RequestParam(defaultValue = "0") int pagina,
+            @RequestParam(defaultValue = "10") int tamanho
+    ) {
+        Pageable pageable = PageRequest.of(pagina, tamanho);
+        return ResponseEntity.ok(service.findAllPaginated(pageable));
+    }
+
     @GetMapping("/cpf/{cpf}")
-    public ResponseEntity<PessoaDetailsDTO> consultar(@PathVariable String cpf) {
+    public ResponseEntity<PessoaConsultaResponseDTO> consultar(@PathVariable String cpf) {
         return ResponseEntity.ok(service.consultarPessoa(cpf));
     }
 
@@ -43,7 +56,7 @@ public class PessoaController {
     }
 
     @GetMapping("/cpf/{cpf}/integrada")
-    public ResponseEntity<PessoaIntegradaDTO> consultarIntegrada(@PathVariable String cpf) {
+    public ResponseEntity<PessoaIntegradaResponseDTO> consultarIntegrada(@PathVariable String cpf) {
         return ResponseEntity.ok(service.consultarPessoaIntegrada(cpf));
     }
 

@@ -1,23 +1,25 @@
 package com.luisgmr.senai.backend.mapper;
 
 import com.luisgmr.senai.backend.domain.*;
-import com.luisgmr.senai.backend.dto.*;
+import com.luisgmr.senai.backend.dto.request.CadastrarPessoaRequestDTO;
+import com.luisgmr.senai.backend.dto.response.PessoaConsultaResponseDTO;
+import com.luisgmr.senai.backend.dto.response.CadastrarPessoaResponseDTO;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
 @Mapper(componentModel = "spring")
 public interface PessoaMapper {
     @Mapping(source = "dataNascimento", target = "nascimento")
-    Pessoa toEntity(PessoaRequestDTO dto);
+    Pessoa toEntity(CadastrarPessoaRequestDTO dto);
 
     @Mapping(target = "mensagem", constant = "Operação realizada com sucesso")
-    PessoaResponseDTO toResponse(Pessoa pessoa);
+    CadastrarPessoaResponseDTO toResponse(Pessoa pessoa);
 
     @Mapping(source = "nascimento", target = "dataNascimento")
     @Mapping(target = "situacaoIntegracao", expression = "java(pessoa.getSituacaoIntegracao().toString())")
-    PessoaDetailsDTO toDetails(Pessoa pessoa);
+    PessoaConsultaResponseDTO toDetails(Pessoa pessoa);
 
     @Mapping(source = "nascimento", target = "dataNascimento")
-    PessoaRequestDTO toRequest(Pessoa pessoa);
+    CadastrarPessoaRequestDTO toRequest(Pessoa pessoa);
 
 }

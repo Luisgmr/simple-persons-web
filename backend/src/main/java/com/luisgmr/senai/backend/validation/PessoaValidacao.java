@@ -18,7 +18,7 @@ public class PessoaValidacao {
         }
         
         for (String n : nomes) {
-            if (!n.matches("[A-Z][a-z]+")) {
+            if (!n.matches("[A-ZÀ-ſ][a-zÀ-ſ]+")) {
                 throw new CampoInvalidoException("A primeira letra de cada nome deve ser maiúscula, e as demais minúsculas");
             }
         }

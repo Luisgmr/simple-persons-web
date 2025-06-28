@@ -2,7 +2,7 @@ package com.luisgmr.senai.backend.messaging.consumer;
 
 import com.luisgmr.senai.backend.config.RabbitMQConfig;
 import com.luisgmr.senai.backend.domain.Pessoa;
-import com.luisgmr.senai.backend.dto.PessoaDetailsDTO;
+import com.luisgmr.senai.backend.dto.response.PessoaConsultaResponseDTO;
 import com.luisgmr.senai.backend.repository.PessoaRepository;
 import com.luisgmr.senai.backend.domain.SituacaoIntegracao;
 import jakarta.persistence.EntityNotFoundException;
@@ -32,13 +32,13 @@ public class PessoaConsumer {
 
     @RabbitListener(queues = RabbitMQConfig.QUEUE)
     @Transactional
-    public void processar(PessoaDetailsDTO dto) {
+    public void processar(PessoaConsultaResponseDTO dto) {
         log.info("Consumindo pessoa {} da fila", dto.getCpf());
         Pessoa pessoa = pessoaRepository.findByCpf(dto.getCpf()).orElseThrow(() -> new EntityNotFoundException("Pessoa não encontrada"));
         try {
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
-            HttpEntity<PessoaDetailsDTO> request = new HttpEntity<>(dto, headers);
+            HttpEntity<PessoaConsultaResponseDTO> request = new HttpEntity<>(dto, headers);
             
             try {
                 restTemplate.postForEntity(apiUrl + "/pessoa", request, Void.class);

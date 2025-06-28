@@ -1,21 +1,15 @@
-package com.luisgmr.senai.backend.dto;
+package com.luisgmr.senai.backend.dto.response;
 
-import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
-
 import java.time.LocalDate;
 
 @Data
-public class PessoaRequestDTO {
-    @NotBlank(message = "Nome é obrigatório")
+public class PessoaConsultaResponseDTO {
     private String nome;
-
     private LocalDate dataNascimento;
-
     private String cpf;
-
     private String email;
-
+    private String situacaoIntegracao;
     private EnderecoDTO endereco;
 
     @Data

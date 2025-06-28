@@ -1,7 +1,8 @@
 package com.luisgmr.senai.backend.service;
 
 import com.luisgmr.senai.backend.domain.*;
-import com.luisgmr.senai.backend.dto.*;
+import com.luisgmr.senai.backend.dto.request.CadastrarPessoaRequestDTO;
+import com.luisgmr.senai.backend.dto.response.*;
 import com.luisgmr.senai.backend.exception.IntegracaoPessoaException;
 import com.luisgmr.senai.backend.mapper.*;
 import com.luisgmr.senai.backend.messaging.producer.PessoaProducer;
@@ -10,11 +11,13 @@ import com.luisgmr.senai.backend.validation.*;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+import org.springframework.data.domain.Pageable;
 import org.springframework.web.client.RestTemplate;
 
 @Service
@@ -29,7 +32,7 @@ public class PessoaService {
     @Value("${api.pessoa.url:http://localhost:8081}")
     private String apiUrl;
 
-    public PessoaResponseDTO criarPessoa(PessoaRequestDTO dto) {
+    public CadastrarPessoaResponseDTO criarPessoa(CadastrarPessoaRequestDTO dto) {
         validarCampos(dto);
 
         if (dto.getCpf() != null && repository.existsByCpf(dto.getCpf())) {
@@ -54,7 +57,7 @@ public class PessoaService {
         return mapper.toResponse(pessoa);
     }
 
-    public PessoaResponseDTO atualizarPessoa(String cpf, PessoaRequestDTO dto) {
+    public CadastrarPessoaResponseDTO atualizarPessoa(String cpf, CadastrarPessoaRequestDTO dto) {
         validarCampos(dto);
 
         Pessoa pessoa = repository.findByCpf(cpf)
@@ -84,14 +87,26 @@ public class PessoaService {
     }
 
     @Transactional(readOnly = true)
-    public List<PessoaResponseDTO> findAll() {
+    public List<CadastrarPessoaResponseDTO> findAll() {
         return repository.findAll().stream()
                 .map(mapper::toResponse)
                 .toList();
     }
 
     @Transactional(readOnly = true)
-    public PessoaDetailsDTO consultarPessoa(String cpf) {
+    public PaginaResponseDTO<PessoaConsultaResponseDTO> findAllPaginated(Pageable pageable) {
+        Page<Pessoa> result = repository.findAll(pageable);
+
+        return new PaginaResponseDTO<>(
+                result.stream().map(mapper::toDetails).toList(),
+                result.getNumber(),
+                result.getTotalPages(),
+                result.getTotalElements()
+        );
+    }
+
+    @Transactional(readOnly = true)
+    public PessoaConsultaResponseDTO consultarPessoa(String cpf) {
         Pessoa pessoa = repository.findByCpf(cpf)
                 .orElseThrow(() -> new EntityNotFoundException("Pessoa não encontrada"));
         return mapper.toDetails(pessoa);
@@ -128,14 +143,14 @@ public class PessoaService {
     }
 
     @Transactional(readOnly = true)
-    public PessoaIntegradaDTO consultarPessoaIntegrada(String cpf) {
+    public PessoaIntegradaResponseDTO consultarPessoaIntegrada(String cpf) {
         try {
             RestTemplate restTemplate = new RestTemplate();
             Pessoa pessoa = repository.findByCpf(cpf)
                     .orElseThrow(() -> new EntityNotFoundException("Pessoa não encontrada"));
-            PessoaApiDTO apiDto = restTemplate.getForObject(apiUrl + "/pessoa/cpf/" + cpf, PessoaApiDTO.class);
+            PessoaAPIResponseDTO apiDto = restTemplate.getForObject(apiUrl + "/pessoa/cpf/" + cpf, PessoaAPIResponseDTO.class);
             assert apiDto != null;
-            return PessoaIntegradaDTO.builder()
+            return PessoaIntegradaResponseDTO.builder()
                     .nome(apiDto.getNome())
                     .dataNascimento(apiDto.getDataNascimento())
                     .dataHoraInclusao(apiDto.getDataHoraInclusaoRegistro())
@@ -161,7 +176,7 @@ public class PessoaService {
         }
     }
 
-    private void validarCampos(PessoaRequestDTO dto) {
+    private void validarCampos(CadastrarPessoaRequestDTO dto) {
         pessoaValidacao.validarNome(dto.getNome());
         pessoaValidacao.validarDataNascimento(dto.getDataNascimento());
         pessoaValidacao.validarCpf(dto.getCpf());

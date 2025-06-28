@@ -1,4 +1,4 @@
-package com.luisgmr.senai.backend.dto;
+package com.luisgmr.senai.backend.dto.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

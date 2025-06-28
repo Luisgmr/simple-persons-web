@@ -1,4 +1,4 @@
-package com.luisgmr.senai.backend.dto;
+package com.luisgmr.senai.backend.dto.response;
 
 import lombok.Builder;
 import lombok.Data;
@@ -8,7 +8,7 @@ import java.time.LocalDateTime;
 
 @Builder
 @Data
-public class PessoaIntegradaDTO {
+public class PessoaIntegradaResponseDTO {
     private String nome;
     private LocalDate dataNascimento;
     private String situacaoIntegracao;

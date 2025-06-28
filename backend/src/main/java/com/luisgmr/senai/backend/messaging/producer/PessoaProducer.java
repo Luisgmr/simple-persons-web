@@ -1,7 +1,7 @@
 package com.luisgmr.senai.backend.messaging.producer;
 
 import com.luisgmr.senai.backend.config.RabbitMQConfig;
-import com.luisgmr.senai.backend.dto.PessoaDetailsDTO;
+import com.luisgmr.senai.backend.dto.response.PessoaConsultaResponseDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Component;
@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 public class PessoaProducer {
     private final RabbitTemplate rabbitTemplate;
 
-    public void enviarParaFila(PessoaDetailsDTO dto) {
+    public void enviarParaFila(PessoaConsultaResponseDTO dto) {
         rabbitTemplate.convertAndSend(RabbitMQConfig.EXCHANGE, RabbitMQConfig.ROUTING_KEY, dto);
     }
 }
