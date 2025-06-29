@@ -2,13 +2,13 @@ package com.luisgmr.senai.backend.service;
 
 import com.luisgmr.senai.backend.domain.*;
 import com.luisgmr.senai.backend.dto.request.CadastrarPessoaRequestDTO;
+import com.luisgmr.senai.backend.dto.request.IntegrarPessoaRequestDTO;
 import com.luisgmr.senai.backend.dto.response.*;
 import com.luisgmr.senai.backend.exception.IntegracaoPessoaException;
 import com.luisgmr.senai.backend.mapper.*;
 import com.luisgmr.senai.backend.messaging.producer.PessoaProducer;
 import com.luisgmr.senai.backend.repository.*;
 import com.luisgmr.senai.backend.validation.*;
-import jakarta.persistence.Entity;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -19,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 import org.springframework.data.domain.Pageable;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 @Service
@@ -52,7 +53,13 @@ public class PessoaService {
             dto.getEndereco() != null ? dto.getEndereco().getEstado() : null)
         ) {
             pessoa.setSituacaoIntegracao(SituacaoIntegracao.PENDENTE);
-            pessoaProducer.enviarParaFila(mapper.toDetails(pessoa));
+            pessoaProducer.enviarParaFila(
+                    IntegrarPessoaRequestDTO.builder()
+                            .pessoaConsultaResponseDTO(mapper.toDetails(pessoa))
+                            .isBotaoIntegrar(false)
+                            .isCpfAlterado(false)
+                            .build()
+            );
         }
 
         return mapper.toResponse(pessoa);
@@ -64,9 +71,13 @@ public class PessoaService {
         Pessoa pessoa = repository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Pessoa não encontrada"));
         
+        String cpfAnterior = pessoa.getCpf();
+        boolean cpfAlterado = cpfAnterior != null && !cpfAnterior.equals(dto.getCpf());
+        
         pessoa.setNome(dto.getNome());
         pessoa.setNascimento(dto.getDataNascimento());
         pessoa.setEmail(dto.getEmail());
+        pessoa.setCpf(dto.getCpf());
 
         if (dto.getEndereco() != null) {
             if (pessoa.getEndereco() == null) {
@@ -79,6 +90,9 @@ public class PessoaService {
                 pessoa.getEndereco().setEstado(dto.getEndereco().getEstado());
             }
         }
+
+        if (cpfAlterado)
+            deletarPessoaAPI(cpfAnterior);
 
         if (pessoaValidacao.isCamposPreenchidos(pessoa)) {
             pessoa.setSituacaoIntegracao(SituacaoIntegracao.PENDENTE);
@@ -131,10 +145,28 @@ public class PessoaService {
             throw new IntegracaoPessoaException("Todos os dados da pessoa devem ser preenchidos para realizar uma integração");
         }
 
+        boolean isCpfAlterado = !existePessoaNaAPI(cpf);
+
         pessoa.setSituacaoIntegracao(SituacaoIntegracao.PENDENTE);
         repository.save(pessoa);
-        pessoaProducer.enviarParaFila(mapper.toDetails(pessoa));
-        return new MensagemResponseDTO("Enviando pessoa com o CPF " + cpf + " para a fila de integração");
+        pessoaProducer.enviarParaFila(
+                IntegrarPessoaRequestDTO.builder()
+                        .pessoaConsultaResponseDTO(mapper.toDetails(pessoa))
+                        .isBotaoIntegrar(true)
+                        .isCpfAlterado(isCpfAlterado)
+                        .build()
+        );
+        return new MensagemResponseDTO("Enviando pessoa para a fila de integração");
+    }
+
+    private boolean existePessoaNaAPI(String cpf) {
+        try {
+            RestTemplate restTemplate = new RestTemplate();
+            restTemplate.getForObject(apiUrl + "/pessoa/cpf/" + cpf, PessoaAPIResponseDTO.class);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
     }
 
     @Transactional(readOnly = true)
@@ -157,6 +189,15 @@ public class PessoaService {
         }
     }
 
+    public void deletarPessoaAPI(String cpf) {
+        try {
+            RestTemplate restTemplate = new RestTemplate();
+            restTemplate.delete(apiUrl + "/pessoa/cpf/" + cpf);
+        } catch (Exception e) {
+            throw new EntityNotFoundException("Pessoa não encontrada na API");
+        }
+    }
+
     public MensagemResponseDTO deletarPessoa(Integer id) {
         Pessoa pessoa = repository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Pessoa não encontrada"));
@@ -170,9 +211,15 @@ public class PessoaService {
         } catch (EntityNotFoundException e) {
             repository.delete(pessoa);
             return new MensagemResponseDTO(pessoa.getNome() + " foi removido(a)");
+        } catch (HttpClientErrorException e) {
+            ErroResponseDTO erro = e.getResponseBodyAs(ErroResponseDTO.class);
+            if (erro != null && erro.getErro().equals(EntityNotFoundException.class.getSimpleName())) {
+                throw new IntegracaoPessoaException("A pessoa não corresponde aos dados presentes na API. Realize a integração e tente novamente.");
+            }
         } catch (Exception e) {
             throw new IntegracaoPessoaException("Não foi possível remover a pessoa da API. Remoção cancelada.");
         }
+        return null;
     }
 
     private void validarCampos(CadastrarPessoaRequestDTO dto) {

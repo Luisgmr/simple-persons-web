@@ -2,6 +2,7 @@ package com.luisgmr.senai.backend.messaging.consumer;
 
 import com.luisgmr.senai.backend.config.RabbitMQConfig;
 import com.luisgmr.senai.backend.domain.Pessoa;
+import com.luisgmr.senai.backend.dto.request.IntegrarPessoaRequestDTO;
 import com.luisgmr.senai.backend.dto.response.PessoaConsultaResponseDTO;
 import com.luisgmr.senai.backend.repository.PessoaRepository;
 import com.luisgmr.senai.backend.domain.SituacaoIntegracao;
@@ -32,30 +33,34 @@ public class PessoaConsumer {
 
     @RabbitListener(queues = RabbitMQConfig.QUEUE)
     @Transactional
-    public void processar(PessoaConsultaResponseDTO dto) {
-        log.info("Consumindo pessoa {} da fila", dto.getCpf());
-        Pessoa pessoa = pessoaRepository.findByCpf(dto.getCpf()).orElseThrow(() -> new EntityNotFoundException("Pessoa não encontrada"));
+    public void processar(IntegrarPessoaRequestDTO dto) {
+        PessoaConsultaResponseDTO pessoaConsultaResponseDTO = dto.getPessoaConsultaResponseDTO();
+        log.info("Consumindo pessoa {} da fila", pessoaConsultaResponseDTO.getCpf());
+        Pessoa pessoa = pessoaRepository.findByCpf(pessoaConsultaResponseDTO.getCpf()).orElseThrow(() -> new EntityNotFoundException("Pessoa não encontrada"));
         try {
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
-            HttpEntity<PessoaConsultaResponseDTO> request = new HttpEntity<>(dto, headers);
-            
-            try {
+            HttpEntity<PessoaConsultaResponseDTO> request = new HttpEntity<>(pessoaConsultaResponseDTO, headers);
+
+            if (dto.isBotaoIntegrar()) {
+                if (dto.isCpfAlterado()) {
+                    restTemplate.postForEntity(apiUrl + "/pessoa", request, Void.class);
+                }
+                restTemplate.exchange(apiUrl + "/pessoa/" + pessoaConsultaResponseDTO.getCpf(), HttpMethod.PUT, request, Void.class);
+                log.info("Pessoa {} atualizada com sucesso via PUT", pessoaConsultaResponseDTO.getCpf());
+            } else {
                 restTemplate.postForEntity(apiUrl + "/pessoa", request, Void.class);
-                log.info("Pessoa {} integrada com sucesso via POST", dto.getCpf());
-            } catch (RestClientException e) {
-                restTemplate.exchange(apiUrl + "/pessoa/" + dto.getCpf(), HttpMethod.PUT, request, Void.class);
-                log.info("Pessoa {} atualizada com sucesso via PUT", dto.getCpf());
+                log.info("Pessoa {} integrada com sucesso via POST", pessoaConsultaResponseDTO.getCpf());
             }
-            
+
             pessoa.setSituacaoIntegracao(SituacaoIntegracao.SUCESSO);
-            log.info("Integração da pessoa {} finalizada com sucesso", dto.getCpf());
+            log.info("Integração da pessoa {} finalizada com sucesso", pessoaConsultaResponseDTO.getCpf());
             
         } catch (RestClientException ex) {
-            log.error("Erro ao integrar pessoa {}: {}", dto.getCpf(), ex.getMessage());
+            log.error("Erro ao integrar pessoa {}: {}", pessoaConsultaResponseDTO.getCpf(), ex.getMessage());
             pessoa.setSituacaoIntegracao(SituacaoIntegracao.ERRO);
         } catch (Exception ex) {
-            log.error("Erro inesperado ao processar pessoa {}: {}", dto.getCpf(), ex.getMessage());
+            log.error("Erro inesperado ao processar pessoa {}: {}", pessoaConsultaResponseDTO.getCpf(), ex.getMessage());
             pessoa.setSituacaoIntegracao(SituacaoIntegracao.ERRO);
         }
         
