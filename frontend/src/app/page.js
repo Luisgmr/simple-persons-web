@@ -185,6 +185,11 @@ export default function Page() {
         return new Date(dateTime).toLocaleString("pt-BR");
     };
 
+    const formatDateTimeWithDefault = (dateTime) => {
+        if (!dateTime) return "Nunca alterado";
+        return new Date(dateTime).toLocaleString("pt-BR");
+    };
+
     useEffect(() => {
         fetchData();
     }, []);
@@ -283,12 +288,12 @@ export default function Page() {
                         </DialogDescription>
                     </DialogHeader>
                     <DialogFooter>
-                        <Button variant="outline" onClick={() => setDialogOpen(false)}>
+                        <BotaoAnimado variant="outline" onClick={() => setDialogOpen(false)}>
                             Cancelar
-                        </Button>
-                        <Button variant="destructive" onClick={excluirPessoa}>
+                        </BotaoAnimado>
+                        <BotaoAnimado variant="destructive" onClick={excluirPessoa}>
                             Excluir
-                        </Button>
+                        </BotaoAnimado>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
@@ -537,7 +542,7 @@ export default function Page() {
                         <p><strong>Nascimento:</strong> {formatDate(pessoaIntegrada.dataNascimento)}</p>
                         <p><strong>Situação da Integração:</strong> {pessoaIntegrada.situacaoIntegracao}</p>
                         <p><strong>Data/Hora da Inclusão:</strong> {formatDateTime(pessoaIntegrada.dataHoraInclusao)}</p>
-                        <p><strong>Data/Hora da última alteração:</strong> {formatDateTime(pessoaIntegrada.dataHoraUltimaAlteracao)}</p>
+                        <p><strong>Data/Hora da última alteração:</strong> {formatDateTimeWithDefault(pessoaIntegrada.dataHoraUltimaAlteracao)}</p>
                     </div>
                 )}
             </div>
