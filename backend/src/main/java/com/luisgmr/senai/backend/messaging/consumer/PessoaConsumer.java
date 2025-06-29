@@ -44,7 +44,7 @@ public class PessoaConsumer {
                 restTemplate.postForEntity(apiUrl + "/pessoa", request, Void.class);
                 log.info("Pessoa {} integrada com sucesso via POST", dto.getCpf());
             } catch (RestClientException e) {
-                restTemplate.exchange(apiUrl + "/pessoa/cpf/" + dto.getCpf(), HttpMethod.PUT, request, Void.class);
+                restTemplate.exchange(apiUrl + "/pessoa/" + dto.getCpf(), HttpMethod.PUT, request, Void.class);
                 log.info("Pessoa {} atualizada com sucesso via PUT", dto.getCpf());
             }
             

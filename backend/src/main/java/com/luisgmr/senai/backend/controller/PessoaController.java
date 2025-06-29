@@ -17,7 +17,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 @RestController
 @RequestMapping("/pessoa")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "*")
 public class PessoaController {
     private final PessoaService service;
 
@@ -26,9 +25,9 @@ public class PessoaController {
         return ResponseEntity.status(HttpStatus.CREATED).body(service.criarPessoa(dto));
     }
 
-    @PutMapping("/cpf/{cpf}")
-    public ResponseEntity<CadastrarPessoaResponseDTO> atualizar(@PathVariable String cpf, @Valid @RequestBody CadastrarPessoaRequestDTO dto) {
-        return ResponseEntity.ok(service.atualizarPessoa(cpf, dto));
+    @PutMapping("/{id}")
+    public ResponseEntity<CadastrarPessoaResponseDTO> atualizar(@PathVariable Integer id, @Valid @RequestBody CadastrarPessoaRequestDTO dto) {
+        return ResponseEntity.ok(service.atualizarPessoa(id, dto));
     }
 
     @GetMapping
@@ -60,8 +59,8 @@ public class PessoaController {
         return ResponseEntity.ok(service.consultarPessoaIntegrada(cpf));
     }
 
-    @DeleteMapping("/cpf/{cpf}")
-    public ResponseEntity<MensagemResponseDTO> remover(@PathVariable String cpf) {
-        return ResponseEntity.ok(service.deletarPessoa(cpf));
+    @DeleteMapping("/{id}")
+    public ResponseEntity<MensagemResponseDTO> remover(@PathVariable Integer id) {
+        return ResponseEntity.ok(service.deletarPessoa(id));
     }
 }

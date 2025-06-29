@@ -1,5 +1,6 @@
 package com.luisgmr.senai.backend.validation;
 
+import com.luisgmr.senai.backend.domain.Pessoa;
 import com.luisgmr.senai.backend.exception.CampoInvalidoException;
 import org.springframework.stereotype.Service;
 
@@ -57,6 +58,20 @@ public class PessoaValidacao {
                 throw new CampoInvalidoException("Se informado CEP, todos os campos do endereço devem ser preenchidos");
             }
         }
+    }
+
+    public boolean isCamposPreenchidos(Pessoa pessoa) {
+        return isCamposPreenchidos(
+                pessoa.getNome(),
+                pessoa.getNascimento(),
+                pessoa.getCpf(),
+                pessoa.getEmail(),
+                pessoa.getEndereco().getCep(),
+                pessoa.getEndereco().getRua(),
+                pessoa.getEndereco().getNumero(),
+                pessoa.getEndereco().getCidade(),
+                pessoa.getEndereco().getEstado()
+        );
     }
     
     public boolean isCamposPreenchidos(String nome, LocalDate dataNascimento, String cpf, String email,

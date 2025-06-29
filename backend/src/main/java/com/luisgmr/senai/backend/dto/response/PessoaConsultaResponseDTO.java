@@ -5,6 +5,7 @@ import java.time.LocalDate;
 
 @Data
 public class PessoaConsultaResponseDTO {
+    private Long idPessoa;
     private String nome;
     private LocalDate dataNascimento;
     private String cpf;

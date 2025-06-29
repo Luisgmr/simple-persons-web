@@ -18,7 +18,7 @@ public class PessoaController {
         return ResponseEntity.status(HttpStatus.CREATED).body(service.create(dto));
     }
 
-    @PutMapping("/cpf/{cpf}")
+    @PutMapping("/{cpf}")
     public ResponseEntity<PessoaResponseDTO> atualizar(@PathVariable String cpf, @Valid @RequestBody PessoaRequestDTO dto) {
         return ResponseEntity.ok(service.update(cpf, dto));
     }

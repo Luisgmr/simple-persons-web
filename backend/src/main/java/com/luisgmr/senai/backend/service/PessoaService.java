@@ -8,6 +8,7 @@ import com.luisgmr.senai.backend.mapper.*;
 import com.luisgmr.senai.backend.messaging.producer.PessoaProducer;
 import com.luisgmr.senai.backend.repository.*;
 import com.luisgmr.senai.backend.validation.*;
+import jakarta.persistence.Entity;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -57,10 +58,10 @@ public class PessoaService {
         return mapper.toResponse(pessoa);
     }
 
-    public CadastrarPessoaResponseDTO atualizarPessoa(String cpf, CadastrarPessoaRequestDTO dto) {
+    public CadastrarPessoaResponseDTO atualizarPessoa(Integer id, CadastrarPessoaRequestDTO dto) {
         validarCampos(dto);
 
-        Pessoa pessoa = repository.findByCpf(cpf)
+        Pessoa pessoa = repository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Pessoa não encontrada"));
         
         pessoa.setNome(dto.getNome());
@@ -79,7 +80,11 @@ public class PessoaService {
             }
         }
 
-        pessoa.setSituacaoIntegracao(SituacaoIntegracao.PENDENTE);
+        if (pessoaValidacao.isCamposPreenchidos(pessoa)) {
+            pessoa.setSituacaoIntegracao(SituacaoIntegracao.PENDENTE);
+        } else {
+            pessoa.setSituacaoIntegracao(SituacaoIntegracao.NAO_ENVIADO);
+        }
 
         repository.save(pessoa);
 
@@ -120,17 +125,7 @@ public class PessoaService {
             throw new IntegracaoPessoaException("A situação da integração deve ser Pendente ou Erro para realizar uma nova integração");
         }
 
-        if (pessoaValidacao.isCamposPreenchidos(
-                pessoa.getNome(),
-                pessoa.getNascimento(),
-                pessoa.getCpf(),
-                pessoa.getEmail(),
-                pessoa.getEndereco().getCep(),
-                pessoa.getEndereco().getRua(),
-                pessoa.getEndereco().getNumero(),
-                pessoa.getEndereco().getCidade(),
-                pessoa.getEndereco().getEstado()
-        )) {
+        if (pessoaValidacao.isCamposPreenchidos(pessoa)) {
             validarCampos(mapper.toRequest(pessoa));
         } else {
             throw new IntegracaoPessoaException("Todos os dados da pessoa devem ser preenchidos para realizar uma integração");
@@ -162,13 +157,17 @@ public class PessoaService {
         }
     }
 
-    public MensagemResponseDTO deletarPessoa(String cpf) {
-        Pessoa pessoa = repository.findByCpf(cpf)
+    public MensagemResponseDTO deletarPessoa(Integer id) {
+        Pessoa pessoa = repository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Pessoa não encontrada"));
         
         try {
             RestTemplate restTemplate = new RestTemplate();
-            restTemplate.delete(apiUrl + "/pessoa/cpf/" + cpf);
+            if (pessoa.getCpf() != null && !pessoa.getCpf().isBlank())
+                restTemplate.delete(apiUrl + "/pessoa/cpf/" + pessoa.getCpf());
+            repository.delete(pessoa);
+            return new MensagemResponseDTO(pessoa.getNome() + " foi removido(a)");
+        } catch (EntityNotFoundException e) {
             repository.delete(pessoa);
             return new MensagemResponseDTO(pessoa.getNome() + " foi removido(a)");
         } catch (Exception e) {
