@@ -69,14 +69,37 @@ const schema = z.object({
     numero: z.union([z.string(), z.number()]).optional().transform(val => val ? String(val) : ""),
     cidade: z.string().optional().or(z.literal("")),
     estado: z.string().optional().or(z.literal("")),
-}).refine(data => {
+}).superRefine((data, ctx) => {
     if (data.cep) {
-        return data.rua && data.numero && data.cidade && data.estado;
+        if (!data.rua) {
+            ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: "Rua é obrigatória quando CEP é informado",
+                path: ["rua"]
+            });
+        }
+        if (!data.numero) {
+            ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: "Número é obrigatório quando CEP é informado",
+                path: ["numero"]
+            });
+        }
+        if (!data.cidade) {
+            ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: "Cidade é obrigatória quando CEP é informado",
+                path: ["cidade"]
+            });
+        }
+        if (!data.estado) {
+            ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: "Estado é obrigatório quando CEP é informado",
+                path: ["estado"]
+            });
+        }
     }
-    return true;
-}, {
-    message: "Se CEP informado, todos campos do endereço são obrigatórios",
-    path: ["cep"]
 });
 
 export default function Page() {
