@@ -422,8 +422,9 @@ export default function Page() {
                             )}
                         />
 
-                        {/* Endereço bloco */}
-                        <div className="col-span-full grid md:grid-cols-3 gap-4 pt-4">
+                        <div className="col-span-full border rounded-lg p-4 bg-muted/10 pb-5">
+                            <h3 className="text-md font-medium mb-3 text-muted-foreground">Endereço</h3>
+                            <div className="grid md:grid-cols-3 gap-4">
                             <FormField
                                 control={form.control}
                                 name="cep"
@@ -518,6 +519,7 @@ export default function Page() {
                                     </FormItem>
                                 )}
                             />
+                            </div>
                         </div>
 
                         <div className="col-span-full flex justify-start pt-2">
