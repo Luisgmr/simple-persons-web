@@ -91,7 +91,7 @@ public class PessoaService {
             }
         }
 
-        if (cpfAlterado)
+        if (cpfAlterado && pessoa.getSituacaoIntegracao() != SituacaoIntegracao.NAO_ENVIADO)
             deletarPessoaAPI(cpfAnterior);
 
         if (pessoaValidacao.isCamposPreenchidos(pessoa)) {
