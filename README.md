@@ -1,13 +1,8 @@
-# Prova Java PLENO SD - WEB - Configuração
+# Simple Persons Web
 
-Bem-vindo à prova prática para a vaga de programador full-stack em Java no SENAI Soluções Digitais. Ficamos felizes no seu interesse pela vaga, e desejamos uma ótima prova.  
-Leia com atenção toda a documentação com os requisitos da prova que foi enviado a você e tente desenvolver o máximo que puder, mesmo que tenha que pular alguma etapa, desde que com qualidade e seguindo as regras de negócio.  
-  
-Lembrando que a configuração da prova fica a cargo do candidato, a realizar de acordo com os requisitos repassados ao candidato.  
-  
-Registrar nesse arquivo o que foi realizado da prova, as tecnologias utilizadas, o que não foi possível fazer e alguma observação que achar importante.
-
----
+| Modo escuro | Modo claro |
+|---|---|
+| ![image](https://github.com/user-attachments/assets/94b4d237-cff3-45af-9229-0ed0bb4ae8c8) | ![image](https://github.com/user-attachments/assets/c6952b04-5d9f-4c9c-be3e-43680d79ff5e) |
 
 ## 📋 Implementação Realizada
 
@@ -137,7 +132,7 @@ cd api
 
 ### 📝 Observações
 
-- Todos os requisitos funcionais foram implementados
+- Todos os requisitos funcionais do teste foram implementados
 - Aplicação segue padrões de Clean Code e SOLID
 - Interface intuitiva e responsiva
 - Tratamento adequado de erros e edge cases
