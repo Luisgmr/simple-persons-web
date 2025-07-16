@@ -1,4 +1,5 @@
 # Simple Persons Web
+Um projeto full-stack desenvolvido com Java, Spring Boot, RabbitMQ, Docker e Next.js, implementado como teste técnico para uma vaga de desenvolvedor pleno.
 
 | Modo escuro | Modo claro |
 |---|---|
